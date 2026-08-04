@@ -1,7 +1,7 @@
 # agent-book-lab
 
 『LangChainとLangGraphによるRAG・AIエージェント［実践］入門』を教材として、
-LM Studioを使ったLangChain、LangGraph、RAG、AIエージェントを自分で実装しながら学ぶための
+クラウドAPIを使ったLangChain、LangGraph、RAG、AIエージェントを自分で実装しながら学ぶための
 個人用リポジトリです。
 
 このリポジトリには書籍の配布コードや原本Notebookを含めません。
@@ -9,11 +9,10 @@ LM Studioを使ったLangChain、LangGraph、RAG、AIエージェントを自分
 
 ## 現在地
 
-- [x] Python 3.11とuvによるローカル環境
-- [x] LM StudioのOpenAI互換APIへの接続
-- [x] Gemma 4 E4Bによるチャット推論
-- [x] EmbeddingGemmaによる日本語テキストの埋め込み生成
-- [ ] 第2章のハンズオン
+- [x] Python 3.11とuvによる実行環境
+- [x] OpenAI／Tavily／LangSmith用の環境変数
+- [x] 第2〜5章のクラウドAPI版Notebook
+- [ ] APIキー設定後の全セル実行
 
 ## 学習の進め方
 
@@ -32,9 +31,7 @@ chapterXX/
   ↓
 自分で実装する
   ↓
-fastモデルで検証する
-  ↓
-必要ならstrongモデルと比較する
+クラウドAPIで検証する
   ↓
 NOTES.mdへ記録する
 ```
@@ -44,25 +41,29 @@ NOTES.mdへ記録する
 ```bash
 uv sync
 cp .env.example .env
-uv run python scripts/check_lmstudio.py
 ```
 
-LM StudioのDeveloper画面でサーバーを起動し、`/v1/models`に表示されたモデルIDを
-`.env`へ設定します。`.env`はGit管理対象外です。
+`.env`へ利用するサービスのAPIキーを設定します。`.env`はGit管理対象外です。
 
-## Models
+```dotenv
+OPENAI_API_KEY=
+TAVILY_API_KEY=
+LANGSMITH_API_KEY=
+```
+
+LangSmithは任意です。`LANGSMITH_API_KEY`が空の場合、Notebookはトレースを無効にして実行します。
+
+## Cloud models
 
 | 役割 | 環境変数 | 現在のモデル |
 |---|---|---|
-| 日常的な開発 | `LM_STUDIO_FAST_MODEL` | `google/gemma-4-e4b` |
-| 高精度な比較 | `LM_STUDIO_STRONG_MODEL` | `google/gemma-4-31b` |
-| RAGの埋め込み | `LM_STUDIO_EMBEDDING_MODEL` | `text-embedding-embeddinggemma-300m` |
+| チャット | `OPENAI_CHAT_MODEL` | `gpt-4o-mini` |
+| RAGの埋め込み | `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-small` |
 
 ```python
 from agent_book.models import create_chat_model
 
-fast_model = create_chat_model("fast")
-strong_model = create_chat_model("strong")
+model = create_chat_model()
 ```
 
 ## Checks
@@ -74,5 +75,5 @@ uv run pytest
 
 ## Dependency policy
 
-ルートの`pyproject.toml`と`uv.lock`は、全章で共有する最小環境です。
-RAG、ベクトルストア、評価ツールなどの章固有依存は、必要になった時点で検証して追加します。
+ルートの`pyproject.toml`と`uv.lock`で全章の依存関係を共有します。
+Notebook内では`pip install`を実行しません。
